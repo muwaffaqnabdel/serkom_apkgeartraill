@@ -49,17 +49,22 @@ class _RegisterViewState extends State<RegisterView> {
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              // Header Icon & Title
-              Container(
-                padding: const EdgeInsets.all(16),
-                decoration: const BoxDecoration(
-                  color: Color(0xFFECFDF5),
-                  shape: BoxShape.circle,
-                ),
-                child: const Icon(
-                  Icons.person_add_outlined,
-                  size: 40,
-                  color: Color(0xFF1E3A2F),
+              // Header Logo & Title
+              Image.asset(
+                'assets/images/logo.png',
+                height: 120,
+                fit: BoxFit.contain,
+                errorBuilder: (context, error, stackTrace) => Container(
+                  padding: const EdgeInsets.all(16),
+                  decoration: const BoxDecoration(
+                    color: Color(0xFFECFDF5),
+                    shape: BoxShape.circle,
+                  ),
+                  child: const Icon(
+                    Icons.person_add_outlined,
+                    size: 40,
+                    color: Color(0xFF1E3A2F),
+                  ),
                 ),
               ),
               const SizedBox(height: 16),

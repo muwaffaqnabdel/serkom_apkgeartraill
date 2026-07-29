@@ -36,24 +36,29 @@ class _LoginViewState extends State<LoginView> {
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               const SizedBox(height: 40),
-              // Brand Icon & Title
-              Container(
-                padding: const EdgeInsets.all(16),
-                decoration: const BoxDecoration(
-                  color: Color(0xFFECFDF5),
-                  shape: BoxShape.circle,
-                ),
-                child: const Icon(
-                  Icons.directions_bike,
-                  size: 48,
-                  color: Color(0xFF1E3A2F),
+              // Brand Logo & Title
+              Image.asset(
+                'assets/images/logo.png',
+                height: 140,
+                fit: BoxFit.contain,
+                errorBuilder: (context, error, stackTrace) => Container(
+                  padding: const EdgeInsets.all(16),
+                  decoration: const BoxDecoration(
+                    color: Color(0xFFECFDF5),
+                    shape: BoxShape.circle,
+                  ),
+                  child: const Icon(
+                    Icons.directions_bike,
+                    size: 48,
+                    color: Color(0xFF1E3A2F),
+                  ),
                 ),
               ),
-              const SizedBox(height: 16),
+              const SizedBox(height: 12),
               const Text(
                 'Gear & Trail',
                 style: TextStyle(
-                  fontSize: 38,
+                  fontSize: 34,
                   fontWeight: FontWeight.bold,
                   color: Color(0xFF1E3A2F),
                   letterSpacing: -0.5,
