@@ -41,18 +41,25 @@ class _LoginViewState extends State<LoginView> {
                 'assets/images/logo.png',
                 height: 140,
                 fit: BoxFit.contain,
-                errorBuilder: (context, error, stackTrace) => Container(
-                  padding: const EdgeInsets.all(16),
-                  decoration: const BoxDecoration(
-                    color: Color(0xFFECFDF5),
-                    shape: BoxShape.circle,
-                  ),
-                  child: const Icon(
-                    Icons.directions_bike,
-                    size: 48,
-                    color: Color(0xFF1E3A2F),
-                  ),
-                ),
+                errorBuilder: (context, error, stackTrace) {
+                  return Image.asset(
+                    'assets/images/logo.jpg',
+                    height: 140,
+                    fit: BoxFit.contain,
+                    errorBuilder: (context, error2, stackTrace2) => Container(
+                      padding: const EdgeInsets.all(16),
+                      decoration: const BoxDecoration(
+                        color: Color(0xFFECFDF5),
+                        shape: BoxShape.circle,
+                      ),
+                      child: const Icon(
+                        Icons.directions_bike,
+                        size: 48,
+                        color: Color(0xFF1E3A2F),
+                      ),
+                    ),
+                  );
+                },
               ),
               const SizedBox(height: 12),
               const Text(
