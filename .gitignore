@@ -1,0 +1,27 @@
+# Node.js
+node_modules/
+**/node_modules/
+
+# Flutter & Dart
+**/build/
+**/.dart_tool/
+**/.pub-cache/
+**/.pub/
+**/ephemeral/
+**/flutter_export_environment.sh
+
+# Android & iOS build files
+**/android/.gradle/
+**/android/app/build/
+**/ios/Pods/
+**/ios/.symlinks/
+
+# IDEs & System
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
+*.swp
+
+# Logs & temp
+*.log
