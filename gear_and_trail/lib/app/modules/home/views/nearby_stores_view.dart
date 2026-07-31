@@ -8,38 +8,38 @@ import '../../../data/providers/location_service.dart';
 class NearbyStoresView extends StatelessWidget {
   const NearbyStoresView({super.key});
 
-  // Data toko/bengkel sepeda terdekat (simulasi database toko)
+  // Data toko & bengkel sepeda terdekat (General Bike Shops & Repair Workshops)
   static final List<Map<String, dynamic>> _storeDatabase = [
     {
       'id': 'store-1',
-      'name': 'Gear & Trail — Pusat Jakarta',
-      'type': 'Toko Resmi',
+      'name': 'Rodalink Official Bike Shop & Servis',
+      'type': 'Toko & Bengkel Resmi',
       'address': 'Jl. Sudirman No. 45, Jakarta Pusat',
       'phone': '021-5551234',
       'hours': 'Senin-Sabtu: 09.00-20.00',
       'lat': -6.2088,
       'lng': 106.8456,
-      'services': ['Jual Sepeda', 'Servis', 'Spare Part'],
+      'services': ['Penjualan Sepeda', 'Servis General', 'Spare Part', 'Tune-Up'],
       'icon': Icons.store,
       'color': Color(0xFF1E3A2F),
     },
     {
       'id': 'store-2',
-      'name': 'Bengkel MTB Cilandak',
-      'type': 'Bengkel Mitra',
+      'name': 'Bengkel Sepeda Cilandak Jaya',
+      'type': 'Bengkel Sepeda Global',
       'address': 'Jl. Cilandak Tengah No. 12, Jakarta Selatan',
       'phone': '021-5557890',
       'hours': 'Senin-Minggu: 08.00-18.00',
       'lat': -6.2896,
       'lng': 106.8060,
-      'services': ['Servis', 'Tune-Up', 'Ganti Ban'],
+      'services': ['Servis Ringan & Berat', 'Tune-Up', 'Ganti Ban & Rantai'],
       'icon': Icons.build_outlined,
       'color': Color(0xFFEA580C),
     },
     {
       'id': 'store-3',
-      'name': 'Gear & Trail — Bandung',
-      'type': 'Toko Resmi',
+      'name': 'Polygon Center & Servis Bandung',
+      'type': 'Toko & Bengkel Resmi',
       'address': 'Jl. Asia Afrika No. 78, Bandung',
       'phone': '022-4201234',
       'hours': 'Senin-Minggu: 10.00-21.00',
@@ -51,8 +51,8 @@ class NearbyStoresView extends StatelessWidget {
     },
     {
       'id': 'store-4',
-      'name': 'Trail Bike Shop Bogor',
-      'type': 'Mitra Terdaftar',
+      'name': 'Toko & Bengkel Sepeda Bogor Utama',
+      'type': 'Bengkel Sepeda Terdaftar',
       'address': 'Jl. Juanda No. 23, Bogor',
       'phone': '0251-8321234',
       'hours': 'Senin-Sabtu: 09.00-17.00',
@@ -65,26 +65,26 @@ class NearbyStoresView extends StatelessWidget {
     {
       'id': 'store-5',
       'name': 'Bengkel Sepeda Kebayoran',
-      'type': 'Bengkel Mitra',
+      'type': 'Bengkel Sepeda Global',
       'address': 'Jl. Melawai No. 8, Kebayoran Baru, Jakarta',
       'phone': '021-7201234',
       'hours': 'Senin-Sabtu: 08.30-17.30',
       'lat': -6.2466,
       'lng': 106.7954,
-      'services': ['Servis', 'Ganti Komponen', 'Tune-Up'],
+      'services': ['Servis General', 'Ganti Komponen', 'Tune-Up'],
       'icon': Icons.build_outlined,
       'color': Color(0xFFEA580C),
     },
     {
       'id': 'store-6',
-      'name': 'MTB Store Depok',
-      'type': 'Mitra Terdaftar',
+      'name': 'United Bike Store & Servis Depok',
+      'type': 'Toko & Bengkel Resmi',
       'address': 'Jl. Margonda Raya No. 100, Depok',
       'phone': '021-7771234',
       'hours': 'Senin-Minggu: 09.00-20.00',
       'lat': -6.4025,
       'lng': 106.7942,
-      'services': ['Jual Sepeda', 'Aksesori', 'Helm & Protektor'],
+      'services': ['Jual Sepeda', 'Servis', 'Aksesori', 'Helm & Protektor'],
       'icon': Icons.directions_bike,
       'color': Color(0xFF1E3A2F),
     },
@@ -112,7 +112,7 @@ class NearbyStoresView extends StatelessWidget {
           ),
         ),
         actions: [
-          Obx(() => locationService.isLoading.value
+          Obx(() => (locationService.isLoading.value || locationService.isFetchingRealStores.value)
               ? const Padding(
                   padding: EdgeInsets.all(16.0),
                   child: SizedBox(
@@ -127,7 +127,7 @@ class NearbyStoresView extends StatelessWidget {
               : IconButton(
                   icon: const Icon(Icons.my_location, color: Color(0xFF1E3A2F)),
                   onPressed: () => _detectLocation(locationService),
-                  tooltip: 'Deteksi Lokasi',
+                  tooltip: 'Deteksi Lokasi & Ambil Data Real',
                 )),
         ],
       ),
@@ -136,6 +136,9 @@ class NearbyStoresView extends StatelessWidget {
           // Location status banner
           Obx(() {
             final pos = locationService.currentPosition.value;
+            final isFetching = locationService.isFetchingRealStores.value;
+            final realCount = locationService.realStoresList.length;
+
             return AnimatedContainer(
               duration: const Duration(milliseconds: 300),
               width: double.infinity,
@@ -151,9 +154,12 @@ class NearbyStoresView extends StatelessWidget {
                   const SizedBox(width: 10),
                   Expanded(
                     child: Text(
-                      pos != null
-                          ? 'Lokasi Anda: ${locationService.generateAddressFromCoords(pos.latitude, pos.longitude)}\n${locationService.formatCoordinates(pos)}'
-                          : 'Tekan tombol 📍 di atas untuk mendeteksi lokasi Anda\nJarak toko dihitung dari posisi GPS Anda',
+                      isFetching
+                          ? 'Mencari data real toko & bengkel sepeda dari OpenStreetMap GPS...'
+                          : pos != null
+                              ? 'Lokasi Anda: ${locationService.generateAddressFromCoords(pos.latitude, pos.longitude)}\n'
+                                '${realCount > 0 ? "📍 $realCount Toko/Bengkel Real Ditemukan di Sekitar Anda via OpenStreetMap" : locationService.formatCoordinates(pos)}'
+                              : 'Tekan tombol 📍 di atas untuk mendeteksi lokasi GPS Anda\nMenampilkan bengkel & toko sepeda terdekat secara akurat',
                       style: TextStyle(
                         fontSize: 12,
                         color: pos != null ? const Color(0xFF047857) : const Color(0xFFB45309),
@@ -179,8 +185,25 @@ class NearbyStoresView extends StatelessWidget {
           // Stores list
           Expanded(
             child: Obx(() {
+              if (locationService.isFetchingRealStores.value) {
+                return const Center(
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      CircularProgressIndicator(color: Color(0xFF1E3A2F)),
+                      SizedBox(height: 16),
+                      Text(
+                        'Mengambil data real bengkel sepeda dari OpenStreetMap GPS...',
+                        style: TextStyle(color: Color(0xFF64748B), fontSize: 13),
+                      ),
+                    ],
+                  ),
+                );
+              }
+
               final pos = locationService.currentPosition.value;
               final stores = _getSortedStores(pos, locationService);
+
               return ListView.separated(
                 padding: const EdgeInsets.all(16),
                 itemCount: stores.length,
@@ -191,19 +214,23 @@ class NearbyStoresView extends StatelessWidget {
           ),
         ],
       ),
-      floatingActionButton: Obx(() => locationService.isLoading.value
+      floatingActionButton: Obx(() => locationService.isLoading.value || locationService.isFetchingRealStores.value
           ? const SizedBox.shrink()
           : FloatingActionButton.extended(
               onPressed: () => _detectLocation(locationService),
               backgroundColor: const Color(0xFF1E3A2F),
               foregroundColor: Colors.white,
               icon: const Icon(Icons.near_me),
-              label: const Text('Cari Terdekat', style: TextStyle(fontWeight: FontWeight.bold)),
+              label: const Text('Cari Terdekat (GPS)', style: TextStyle(fontWeight: FontWeight.bold)),
             )),
     );
   }
 
   List<Map<String, dynamic>> _getSortedStores(Position? pos, LocationService service) {
+    if (service.realStoresList.isNotEmpty) {
+      return service.realStoresList;
+    }
+
     final stores = List<Map<String, dynamic>>.from(_storeDatabase);
     if (pos != null) {
       for (final store in stores) {

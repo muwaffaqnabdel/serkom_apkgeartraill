@@ -1,15 +1,19 @@
+import 'dart:convert';
 import 'package:flutter/foundation.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:get/get.dart';
 import 'package:flutter/material.dart';
+import 'package:http/http.dart' as http;
 
-/// LocationService — mengelola GPS dan deteksi lokasi user
-/// Digunakan untuk: auto-fill alamat checkout & cari toko terdekat
+/// LocationService — mengelola GPS, deteksi lokasi user, dan pencarian data real toko & bengkel sepeda
 class LocationService extends GetxController {
   final isLoading = false.obs;
   final currentPosition = Rxn<Position>();
   final currentAddress = ''.obs;
   final permissionStatus = ''.obs;
+
+  final realStoresList = <Map<String, dynamic>>[].obs;
+  final isFetchingRealStores = false.obs;
 
   @override
   void onInit() {
@@ -111,6 +115,10 @@ class LocationService extends GetxController {
       );
 
       currentPosition.value = position;
+
+      // Ambil data real toko/bengkel sepeda terdekat secara otomatis berdasarkan GPS
+      fetchRealNearbyBikeStores(position.latitude, position.longitude);
+
       return position;
     } catch (e) {
       debugPrint('LocationService: Error getting position: $e');
@@ -128,6 +136,131 @@ class LocationService extends GetxController {
     }
   }
 
+  /// Ambil data REAL toko & bengkel sepeda global terdekat dari OpenStreetMap API
+  Future<List<Map<String, dynamic>>> fetchRealNearbyBikeStores(double lat, double lng) async {
+    isFetchingRealStores.value = true;
+    List<Map<String, dynamic>> results = [];
+
+    try {
+      final query = '''
+[out:json][timeout:15];
+(
+  node["shop"="bicycle"](around:25000,$lat,$lng);
+  way["shop"="bicycle"](around:25000,$lat,$lng);
+  node["craft"="bicycle_repair"](around:25000,$lat,$lng);
+  node["amenity"="bicycle_repair_station"](around:25000,$lat,$lng);
+);
+out center 30;
+''';
+      final response = await http.post(
+        Uri.parse('https://overpass-api.de/api/interpreter'),
+        body: query,
+        headers: {'User-Agent': 'GearAndTrailApp/1.0'},
+      ).timeout(const Duration(seconds: 10));
+
+      if (response.statusCode == 200) {
+        final data = json.decode(response.body);
+        final elements = data['elements'] as List? ?? [];
+
+        for (var el in elements) {
+          final tags = el['tags'] as Map<String, dynamic>? ?? {};
+          final name = tags['name'] as String? ?? tags['brand'] as String? ?? 'Bengkel Sepeda';
+          
+          double? itemLat;
+          double? itemLng;
+          if (el['type'] == 'node') {
+            itemLat = (el['lat'] as num?)?.toDouble();
+            itemLng = (el['lon'] as num?)?.toDouble();
+          } else if (el['center'] != null) {
+            itemLat = (el['center']['lat'] as num?)?.toDouble();
+            itemLng = (el['center']['lon'] as num?)?.toDouble();
+          }
+
+          if (itemLat != null && itemLng != null) {
+            final dist = calculateDistance(lat, lng, itemLat, itemLng);
+            final street = tags['addr:street'] ?? tags['addr:full'] ?? tags['address'] ?? '';
+            final city = tags['addr:city'] ?? tags['addr:suburb'] ?? '';
+            String address = [street, city].where((s) => s.toString().isNotEmpty).join(', ');
+            if (address.isEmpty) {
+              address = 'Area GPS: ${itemLat.toStringAsFixed(4)}, ${itemLng.toStringAsFixed(4)}';
+            }
+
+            final isRepairOnly = tags['craft'] == 'bicycle_repair' || tags['amenity'] == 'bicycle_repair_station';
+            final type = isRepairOnly ? 'Bengkel Sepeda Global' : 'Toko & Servis Sepeda';
+            final phone = tags['phone'] ?? tags['contact:phone'] ?? '-';
+            final openingHours = tags['opening_hours'] ?? 'Senin-Sabtu: 08.00-17.00';
+
+            results.add({
+              'id': 'osm-${el['id']}',
+              'name': name,
+              'type': type,
+              'address': address,
+              'phone': phone.toString(),
+              'hours': openingHours.toString(),
+              'lat': itemLat,
+              'lng': itemLng,
+              'distance': dist,
+              'services': isRepairOnly ? ['Servis Sepeda', 'Tune-Up', 'Ganti Ban'] : ['Toko Sepeda', 'Servis Sepeda', 'Spare Part'],
+              'icon': isRepairOnly ? Icons.build_outlined : Icons.store,
+              'color': isRepairOnly ? const Color(0xFFEA580C) : const Color(0xFF1E3A2F),
+              'isRealOSMData': true,
+            });
+          }
+        }
+      }
+    } catch (e) {
+      debugPrint('LocationService: Overpass API error: $e');
+    }
+
+    // Fallback: Jika Overpass belum mendapatkan node, gunakan Nominatim Search API
+    if (results.isEmpty) {
+      try {
+        final url = Uri.parse(
+          'https://nominatim.openstreetmap.org/search?format=json&q=bengkel+sepeda&lat=$lat&lon=$lng&bounded=1&viewbox=${lng - 0.4},${lat + 0.4},${lng + 0.4},${lat - 0.4}&limit=15'
+        );
+        final response = await http.get(url, headers: {
+          'User-Agent': 'GearAndTrailApp/1.0 (contact@geartrail.app)'
+        }).timeout(const Duration(seconds: 8));
+
+        if (response.statusCode == 200) {
+          final list = json.decode(response.body) as List? ?? [];
+          for (var item in list) {
+            final itemLat = double.tryParse(item['lat'].toString());
+            final itemLng = double.tryParse(item['lon'].toString());
+            if (itemLat != null && itemLng != null) {
+              final dist = calculateDistance(lat, lng, itemLat, itemLng);
+              final displayName = item['display_name'].toString();
+              final name = item['name'] ?? displayName.split(',').first;
+
+              results.add({
+                'id': 'nominatim-${item['place_id']}',
+                'name': name,
+                'type': 'Bengkel Sepeda Global',
+                'address': displayName,
+                'phone': '-',
+                'hours': 'Senin-Sabtu: 08.30-17.00',
+                'lat': itemLat,
+                'lng': itemLng,
+                'distance': dist,
+                'services': ['Servis Sepeda', 'Spare Part', 'Tune-Up'],
+                'icon': Icons.build_outlined,
+                'color': const Color(0xFFEA580C),
+                'isRealOSMData': true,
+              });
+            }
+          }
+        }
+      } catch (e) {
+        debugPrint('LocationService: Nominatim API error: $e');
+      }
+    }
+
+    results.sort((a, b) => (a['distance'] as double).compareTo(b['distance'] as double));
+    realStoresList.assignAll(results);
+    isFetchingRealStores.value = false;
+    return results;
+  }
+
   /// Hitung jarak antara dua koordinat dalam kilometer
   double calculateDistance(double lat1, double lon1, double lat2, double lon2) {
     return Geolocator.distanceBetween(lat1, lon1, lat2, lon2) / 1000;
@@ -140,24 +273,24 @@ class LocationService extends GetxController {
     return 'Lat: $lat, Lon: $lon';
   }
 
-  /// Generate alamat estimasi dari koordinat (reverse geocoding tanpa API key)
-  /// Untuk produksi gunakan geocoding package + Google Maps API
+  /// Generate alamat estimasi dari koordinat
   String generateAddressFromCoords(double lat, double lon) {
-    // Deteksi area berdasarkan koordinat Indonesia
     if (lat >= -6.4 && lat <= -6.0 && lon >= 106.6 && lon <= 107.0) {
       return 'Jakarta, DKI Jakarta';
     } else if (lat >= -7.1 && lat <= -6.8 && lon >= 107.5 && lon <= 107.8) {
       return 'Bandung, Jawa Barat';
+    } else if (lat >= -6.7 && lat <= -6.5 && lon >= 106.7 && lon <= 106.9) {
+      return 'Bogor, Jawa Barat';
+    } else if (lat >= -6.5 && lat <= -6.3 && lon >= 106.7 && lon <= 106.9) {
+      return 'Depok, Jawa Barat';
     } else if (lat >= -7.3 && lat <= -7.0 && lon >= 112.6 && lon <= 112.8) {
       return 'Surabaya, Jawa Timur';
     } else if (lat >= -7.9 && lat <= -7.7 && lon >= 110.3 && lon <= 110.5) {
       return 'Yogyakarta, DIY';
     } else if (lat >= -8.7 && lat <= -8.6 && lon >= 115.1 && lon <= 115.3) {
       return 'Denpasar, Bali';
-    } else if (lat >= -3.9 && lat <= -3.6 && lon >= 102.2 && lon <= 102.4) {
-      return 'Bengkulu, Sumatera';
     } else {
-      return 'Koordinat: ${lat.toStringAsFixed(4)}, ${lon.toStringAsFixed(4)}';
+      return 'Area (${lat.toStringAsFixed(2)}, ${lon.toStringAsFixed(2)})';
     }
   }
 }

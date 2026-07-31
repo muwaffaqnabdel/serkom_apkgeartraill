@@ -265,7 +265,7 @@ class HomeView extends GetView<HomeController> {
                             ),
                             SizedBox(height: 2),
                             Text(
-                              'Temukan lokasi toko & servis MTB terdekat dengan GPS',
+                              'Temukan toko & bengkel sepeda terdekat dengan GPS real',
                               style: TextStyle(
                                 color: Colors.white70,
                                 fontSize: 12,
