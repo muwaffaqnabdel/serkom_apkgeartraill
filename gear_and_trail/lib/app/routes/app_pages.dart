@@ -11,6 +11,7 @@ import '../modules/home/views/nearby_stores_view.dart';
 import '../modules/catalog/views/catalog_view.dart';
 import '../modules/cart/bindings/cart_binding.dart';
 import '../modules/cart/views/cart_view.dart';
+import '../modules/cart/views/order_tracking_view.dart';
 import '../modules/profile/views/profile_view.dart';
 import 'app_routes.dart';
 
@@ -63,6 +64,10 @@ class AppPages {
     GetPage(
       name: Routes.nearbyStores,
       page: () => const NearbyStoresView(),
+    ),
+    GetPage(
+      name: Routes.orderTracking,
+      page: () => const OrderTrackingView(),
     ),
   ];
 }

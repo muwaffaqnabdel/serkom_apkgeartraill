@@ -93,14 +93,14 @@ class CartController extends GetxController {
     _storage.clearCart();
   }
 
-  Future<bool> checkout({
+  Future<Map<String, dynamic>?> checkout({
     required String name,
     required String phone,
     required String address,
   }) async {
     // Cek koneksi internet sebelum checkout
     if (!_network.checkBeforeAction('melakukan checkout')) {
-      return false;
+      return null;
     }
 
     try {
@@ -123,18 +123,22 @@ class CartController extends GetxController {
         'totalAmount': grandTotal,
       };
 
-      final success = await provider.sendOrder(payload);
-      if (success) {
+      final orderResult = await provider.sendOrder(payload);
+      if (orderResult != null) {
+        final realId = (orderResult['id'] ?? orderId).toString();
+        // Simpan pesanan ke riwayat pesanan lokal
+        await _storage.saveUserOrder(orderResult);
         // Kirim notifikasi lokal pesanan berhasil
         await _notifications.showOrderSuccessNotification(
-          orderId: orderId,
+          orderId: realId,
           totalAmount: formatPrice(grandTotal),
         );
         clearCart();
+        return orderResult;
       }
-      return success;
+      return null;
     } catch (e) {
-      return false;
+      return null;
     }
   }
 }

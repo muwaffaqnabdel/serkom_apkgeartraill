@@ -11,6 +11,7 @@ abstract class Routes {
   static const cart = _Paths.cart;
   static const profile = _Paths.profile;
   static const nearbyStores = _Paths.nearbyStores;
+  static const orderTracking = _Paths.orderTracking;
 }
 
 abstract class _Paths {
@@ -26,4 +27,5 @@ abstract class _Paths {
   static const cart = '/cart';
   static const profile = '/profile';
   static const nearbyStores = '/nearby-stores';
+  static const orderTracking = '/order-tracking';
 }

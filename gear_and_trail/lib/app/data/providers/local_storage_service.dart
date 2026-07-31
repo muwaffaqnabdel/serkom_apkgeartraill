@@ -142,4 +142,32 @@ class LocalStorageService {
       debugPrint('Error removing avatar path: $e');
     }
   }
+
+  // ----------------------------------------------------
+  // 5. Local Persistence: Order History Storage
+  // ----------------------------------------------------
+  static const String _keyOrders = 'user_orders';
+
+  List<Map<String, dynamic>> getUserOrders() {
+    try {
+      final List<dynamic>? raw = _box.read<List<dynamic>>(_keyOrders);
+      if (raw == null) return [];
+      return raw.map((e) => Map<String, dynamic>.from(e as Map)).toList();
+    } catch (e) {
+      debugPrint('Error reading user orders DB: $e');
+      return [];
+    }
+  }
+
+  Future<void> saveUserOrder(Map<String, dynamic> order) async {
+    try {
+      final existing = getUserOrders();
+      final orderId = (order['id'] ?? order['orderId'] ?? '').toString();
+      existing.removeWhere((o) => (o['id'] ?? o['orderId'] ?? '').toString() == orderId);
+      existing.insert(0, order);
+      await _box.write(_keyOrders, existing);
+    } catch (e) {
+      debugPrint('Error saving user order DB: $e');
+    }
+  }
 }

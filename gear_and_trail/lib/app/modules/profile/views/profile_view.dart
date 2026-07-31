@@ -262,39 +262,63 @@ class ProfileView extends GetView<ProfileController> {
               const SizedBox(height: 16),
 
               // Riwayat Transaksi Card
-              _buildProfileSectionCard(
-                icon: Icons.receipt_long_outlined,
-                title: 'Riwayat Pesanan',
-                actionText: 'Lihat Semua',
-                onActionTap: () => _showAllOrdersBottomSheet(context),
-                child: Column(
-                  children: [
-                    _buildOrderItem(
-                      orderId: 'Order #ORD-1002',
-                      status: 'Selesai',
-                      statusColor: const Color(0xFFECFDF5),
-                      statusTextColor: const Color(0xFF047857),
-                      details: 'Polygon Siskiu T8 MTB & Helm Fox',
-                      price: 'Rp 31.350.000',
-                      buttonText: 'Lihat Detail Pesanan',
-                      onButtonTap: () => _showOrderDetailBottomSheet(
-                        context,
-                        orderId: 'ORD-1002',
-                        status: 'Selesai',
-                        date: '24 Juli 2026',
-                        name: name,
-                        phone: phone,
-                        address: address,
-                        items: [
-                          {'name': 'Polygon Siskiu T8 MTB', 'price': 'Rp 28.500.000', 'qty': 1},
-                          {'name': 'Helm Fox Dropframe Pro', 'price': 'Rp 2.850.000', 'qty': 1},
-                        ],
-                        totalAmount: 'Rp 31.350.000',
-                      ),
-                    ),
-                  ],
-                ),
-              ),
+              Obx(() {
+                final orders = controller.myOrders;
+                return _buildProfileSectionCard(
+                  icon: Icons.receipt_long_outlined,
+                  title: 'Riwayat Pesanan',
+                  actionText: 'Lihat Semua',
+                  onActionTap: () => _showAllOrdersBottomSheet(context),
+                  child: orders.isEmpty
+                      ? const Padding(
+                          padding: EdgeInsets.symmetric(vertical: 20.0),
+                          child: Center(
+                            child: Text(
+                              'Belum ada riwayat pesanan.',
+                              style: TextStyle(color: Color(0xFF64748B), fontSize: 13),
+                            ),
+                          ),
+                        )
+                      : Column(
+                          children: orders.take(3).map((order) {
+                            final oId = (order['id'] ?? order['orderId'] ?? 'ORD-0000').toString();
+                            final status = (order['status'] ?? 'Diproses').toString();
+                            final total = order['totalAmount'] ?? order['subtotal'] ?? 0;
+                            final itemsList = (order['items'] as List?) ?? [];
+                            final summaryText = itemsList.isNotEmpty
+                                ? itemsList.map((i) => '${i['quantity'] ?? 1}x ${i['productName'] ?? i['name'] ?? 'Produk'}').join(', ')
+                                : 'Pesanan Gear & Trail';
+
+                            Color statusColor = const Color(0xFFECFDF5);
+                            Color statusTextColor = const Color(0xFF047857);
+
+                            if (status.toLowerCase().contains('kirim')) {
+                              statusColor = const Color(0xFFFFFBEB);
+                              statusTextColor = const Color(0xFFB45309);
+                            } else if (status.toLowerCase().contains('proses')) {
+                              statusColor = const Color(0xFFEFF6FF);
+                              statusTextColor = const Color(0xFF1D4ED8);
+                            }
+
+                            return Column(
+                              children: [
+                                _buildOrderItem(
+                                  orderId: 'Order #$oId',
+                                  status: status,
+                                  statusColor: statusColor,
+                                  statusTextColor: statusTextColor,
+                                  details: summaryText,
+                                  price: 'Rp ${total.toString().replaceAllMapped(RegExp(r'(\d{1,3})(?=(\d{3})+(?!\d))'), (Match m) => '${m[1]}.')}',
+                                  buttonText: 'Lacak Status Pesanan',
+                                  onButtonTap: () => Get.toNamed(Routes.orderTracking, arguments: order),
+                                ),
+                                const SizedBox(height: 12),
+                              ],
+                            );
+                          }).toList(),
+                        ),
+                );
+              }),
 
               const SizedBox(height: 32),
 
@@ -470,7 +494,7 @@ class ProfileView extends GetView<ProfileController> {
                 const Text(
                   'Daftar Semua Pesanan',
                   style: TextStyle(
-                    fontSize: 20,
+                    fontSize: 18,
                     fontWeight: FontWeight.bold,
                     color: Color(0xFF1E3A2F),
                   ),
@@ -481,90 +505,56 @@ class ProfileView extends GetView<ProfileController> {
                 ),
               ],
             ),
-            const SizedBox(height: 16),
+            const Divider(color: Color(0xFFE2E8F0)),
             Expanded(
-              child: ListView(
-                children: [
-                  _buildOrderItem(
-                    orderId: 'Order #ORD-1002',
-                    status: 'Selesai',
-                    statusColor: const Color(0xFFECFDF5),
-                    statusTextColor: const Color(0xFF047857),
-                    details: 'Polygon Siskiu T8 MTB & Helm Fox',
-                    price: 'Rp 31.350.000',
-                    buttonText: 'Lihat Detail Pesanan',
-                    onButtonTap: () {
-                      Get.back();
-                      _showOrderDetailBottomSheet(
-                        context,
-                        orderId: 'ORD-1002',
-                        status: 'Selesai',
-                        date: '24 Juli 2026',
-                        name: controller.userProfile.value?['name'] ?? 'Budi Santoso',
-                        phone: controller.userProfile.value?['phone'] ?? '081234567890',
-                        address: controller.userProfile.value?['primaryAddress'] ?? 'Jl. Mawar No. 12, Jakarta',
-                        items: [
-                          {'name': 'Polygon Siskiu T8 MTB', 'price': 'Rp 28.500.000', 'qty': 1},
-                          {'name': 'Helm Fox Dropframe Pro', 'price': 'Rp 2.850.000', 'qty': 1},
-                        ],
-                        totalAmount: 'Rp 31.350.000',
-                      );
-                    },
-                  ),
-                  const Divider(color: Color(0xFFE2E8F0), height: 24),
-                  _buildOrderItem(
-                    orderId: 'Order #ORD-1001',
-                    status: 'Sedang Dikirim',
-                    statusColor: const Color(0xFFFFFBEB),
-                    statusTextColor: const Color(0xFFB45309),
-                    details: 'United Clovis 6.10 Hardtail MTB',
-                    price: 'Rp 9.800.000',
-                    buttonText: 'Lihat Detail Pesanan',
-                    onButtonTap: () {
-                      Get.back();
-                      _showOrderDetailBottomSheet(
-                        context,
-                        orderId: 'ORD-1001',
-                        status: 'Sedang Dikirim',
-                        date: '22 Juli 2026',
-                        name: controller.userProfile.value?['name'] ?? 'Budi Santoso',
-                        phone: controller.userProfile.value?['phone'] ?? '081234567890',
-                        address: controller.userProfile.value?['primaryAddress'] ?? 'Jl. Mawar No. 12, Jakarta',
-                        items: [
-                          {'name': 'United Clovis 6.10 Hardtail', 'price': 'Rp 9.800.000', 'qty': 1},
-                        ],
-                        totalAmount: 'Rp 9.810.000',
-                      );
-                    },
-                  ),
-                  const Divider(color: Color(0xFFE2E8F0), height: 24),
-                  _buildOrderItem(
-                    orderId: 'Order #ORD-1000',
-                    status: 'Diproses',
-                    statusColor: const Color(0xFFEFF6FF),
-                    statusTextColor: const Color(0xFF1D4ED8),
-                    details: 'Sarung Tangan Enduro Giro DND',
-                    price: 'Rp 420.000',
-                    buttonText: 'Lihat Detail Pesanan',
-                    onButtonTap: () {
-                      Get.back();
-                      _showOrderDetailBottomSheet(
-                        context,
-                        orderId: 'ORD-1000',
-                        status: 'Diproses',
-                        date: '20 Juli 2026',
-                        name: controller.userProfile.value?['name'] ?? 'Budi Santoso',
-                        phone: controller.userProfile.value?['phone'] ?? '081234567890',
-                        address: controller.userProfile.value?['primaryAddress'] ?? 'Jl. Mawar No. 12, Jakarta',
-                        items: [
-                          {'name': 'Sarung Tangan Enduro Giro DND', 'price': 'Rp 420.000', 'qty': 1},
-                        ],
-                        totalAmount: 'Rp 430.000',
-                      );
-                    },
-                  ),
-                ],
-              ),
+              child: Obx(() {
+                final orders = controller.myOrders;
+                if (orders.isEmpty) {
+                  return const Center(
+                    child: Text('Belum ada riwayat pesanan.', style: TextStyle(color: Color(0xFF64748B))),
+                  );
+                }
+
+                return ListView.separated(
+                  itemCount: orders.length,
+                  separatorBuilder: (_, __) => const Divider(color: Color(0xFFE2E8F0), height: 24),
+                  itemBuilder: (context, index) {
+                    final order = orders[index];
+                    final oId = (order['id'] ?? order['orderId'] ?? 'ORD-0000').toString();
+                    final status = (order['status'] ?? 'Diproses').toString();
+                    final total = order['totalAmount'] ?? order['subtotal'] ?? 0;
+                    final itemsList = (order['items'] as List?) ?? [];
+                    final summaryText = itemsList.isNotEmpty
+                        ? itemsList.map((i) => '${i['quantity'] ?? 1}x ${i['productName'] ?? i['name'] ?? 'Produk'}').join(', ')
+                        : 'Pesanan Gear & Trail';
+
+                    Color statusColor = const Color(0xFFECFDF5);
+                    Color statusTextColor = const Color(0xFF047857);
+
+                    if (status.toLowerCase().contains('kirim')) {
+                      statusColor = const Color(0xFFFFFBEB);
+                      statusTextColor = const Color(0xFFB45309);
+                    } else if (status.toLowerCase().contains('proses')) {
+                      statusColor = const Color(0xFFEFF6FF);
+                      statusTextColor = const Color(0xFF1D4ED8);
+                    }
+
+                    return _buildOrderItem(
+                      orderId: 'Order #$oId',
+                      status: status,
+                      statusColor: statusColor,
+                      statusTextColor: statusTextColor,
+                      details: summaryText,
+                      price: 'Rp ${total.toString().replaceAllMapped(RegExp(r'(\d{1,3})(?=(\d{3})+(?!\d))'), (Match m) => '${m[1]}.')}',
+                      buttonText: 'Lacak Status Pesanan',
+                      onButtonTap: () {
+                        Get.back();
+                        Get.toNamed(Routes.orderTracking, arguments: order);
+                      },
+                    );
+                  },
+                );
+              }),
             ),
           ],
         ),
@@ -573,162 +563,7 @@ class ProfileView extends GetView<ProfileController> {
     );
   }
 
-  // ----------------------------------------------------
-  // BottomSheet: Lihat Detail Pesanan
-  // ----------------------------------------------------
-  void _showOrderDetailBottomSheet(
-    BuildContext context, {
-    required String orderId,
-    required String status,
-    required String date,
-    required String name,
-    required String phone,
-    required String address,
-    required List<Map<String, dynamic>> items,
-    required String totalAmount,
-  }) {
-    Get.bottomSheet(
-      Container(
-        height: MediaQuery.of(context).size.height * 0.80,
-        padding: const EdgeInsets.all(20),
-        decoration: const BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
-        ),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Text(
-                  'Detail Order #$orderId',
-                  style: const TextStyle(
-                    fontSize: 20,
-                    fontWeight: FontWeight.bold,
-                    color: Color(0xFF1E3A2F),
-                  ),
-                ),
-                IconButton(
-                  icon: const Icon(Icons.close),
-                  onPressed: () => Get.back(),
-                ),
-              ],
-            ),
-            const SizedBox(height: 12),
-            Expanded(
-              child: SingleChildScrollView(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    // Status Header Card
-                    Container(
-                      width: double.infinity,
-                      padding: const EdgeInsets.all(16),
-                      decoration: BoxDecoration(
-                        color: const Color(0xFFECFDF5),
-                        borderRadius: BorderRadius.circular(12),
-                        border: Border.all(color: const Color(0xFFA7F3D0)),
-                      ),
-                      child: Row(
-                        children: [
-                          const Icon(Icons.check_circle, color: Color(0xFF047857), size: 24),
-                          const SizedBox(width: 12),
-                          Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                'Status: $status',
-                                style: const TextStyle(
-                                  fontWeight: FontWeight.bold,
-                                  color: Color(0xFF047857),
-                                  fontSize: 14,
-                                ),
-                              ),
-                              Text(
-                                'Tanggal Transaksi: $date',
-                                style: const TextStyle(fontSize: 12, color: Color(0xFF64748B)),
-                              ),
-                            ],
-                          ),
-                        ],
-                      ),
-                    ),
-                    const SizedBox(height: 20),
 
-                    // Alamat Pengiriman
-                    const Text(
-                      'Alamat Tujuan Pengiriman',
-                      style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14, color: Color(0xFF1E3A2F)),
-                    ),
-                    const SizedBox(height: 6),
-                    Text('$name ($phone)', style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 13)),
-                    const SizedBox(height: 2),
-                    Text(address, style: const TextStyle(color: Color(0xFF64748B), fontSize: 13)),
-
-                    const Divider(color: Color(0xFFE2E8F0), height: 28),
-
-                    // Rincian Produk
-                    const Text(
-                      'Rincian Produk Dipesan',
-                      style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14, color: Color(0xFF1E3A2F)),
-                    ),
-                    const SizedBox(height: 10),
-                    ...items.map((item) => Padding(
-                      padding: const EdgeInsets.only(bottom: 8.0),
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          Expanded(
-                            child: Text(
-                              '${item['name']} (x${item['qty']})',
-                              style: const TextStyle(fontSize: 13, color: Color(0xFF0F172A)),
-                            ),
-                          ),
-                          Text(
-                            item['price'].toString(),
-                            style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13, color: Color(0xFFEA580C)),
-                          ),
-                        ],
-                      ),
-                    )),
-
-                    const Divider(color: Color(0xFFE2E8F0), height: 28),
-
-                    // Rincian Pembayaran
-                    const Text(
-                      'Rincian Pembayaran',
-                      style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14, color: Color(0xFF1E3A2F)),
-                    ),
-                    const SizedBox(height: 8),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        const Text('Total Pembayaran', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 15, color: Color(0xFF0F172A))),
-                        Text(totalAmount, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16, color: Color(0xFFEA580C))),
-                      ],
-                    ),
-                    const SizedBox(height: 24),
-                  ],
-                ),
-              ),
-            ),
-            ElevatedButton(
-              onPressed: () => Get.back(),
-              style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFF1E3A2F),
-                foregroundColor: Colors.white,
-                minimumSize: const Size(double.infinity, 46),
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-              ),
-              child: const Text('Tutup Detail', style: TextStyle(fontWeight: FontWeight.bold)),
-            ),
-          ],
-        ),
-      ),
-      isScrollControlled: true,
-    );
-  }
 
   Widget _buildProfileSectionCard({
     required IconData icon,

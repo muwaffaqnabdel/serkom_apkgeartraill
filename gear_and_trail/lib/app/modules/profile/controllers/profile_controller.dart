@@ -14,18 +14,48 @@ class ProfileController extends GetxController {
   final isLoading = false.obs;
   final userProfile = Rxn<Map<String, dynamic>>();
   final avatarPath = ''.obs;
+  final myOrders = <Map<String, dynamic>>[].obs;
 
   @override
   void onInit() {
     super.onInit();
     _loadLocalAvatar();
     fetchProfile();
+    fetchMyOrders();
   }
 
   void _loadLocalAvatar() {
     final savedPath = _storage.getAvatarPath();
     if (savedPath != null && savedPath.isNotEmpty) {
       avatarPath.value = savedPath;
+    }
+  }
+
+  Future<void> fetchMyOrders() async {
+    try {
+      final local = _storage.getUserOrders();
+      final List<Map<String, dynamic>> combined = List<Map<String, dynamic>>.from(local);
+
+      // Ambil seluruh pesanan dari server API
+      final serverRes = await _provider.get('/orders');
+      if (!serverRes.status.hasError && serverRes.body != null && serverRes.body['data'] is List) {
+        final serverList = serverRes.body['data'] as List;
+        for (var item in serverList) {
+          if (item is Map) {
+            final id = (item['id'] ?? item['orderId'] ?? '').toString();
+            final idx = combined.indexWhere((o) => (o['id'] ?? o['orderId'] ?? '').toString() == id);
+            if (idx >= 0) {
+              combined[idx] = Map<String, dynamic>.from(item);
+            } else {
+              combined.add(Map<String, dynamic>.from(item));
+            }
+          }
+        }
+      }
+
+      myOrders.assignAll(combined);
+    } catch (e) {
+      debugPrint('Error fetching my orders: $e');
     }
   }
 

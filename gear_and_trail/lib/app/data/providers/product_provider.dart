@@ -61,13 +61,46 @@ class ProductProvider extends GetConnect {
     }
   }
 
-  Future<bool> sendOrder(Map<String, dynamic> orderPayload) async {
+  Future<Map<String, dynamic>?> sendOrder(Map<String, dynamic> orderPayload) async {
     try {
       final response = await post('/orders', orderPayload);
-      return !response.status.hasError;
+      if (response.status.hasError || response.body == null) return null;
+      if (response.body['success'] == true && response.body['data'] != null) {
+        return Map<String, dynamic>.from(response.body['data']);
+      }
+      return null;
     } catch (e) {
       debugPrint('Error sending order: $e');
-      return false;
+      return null;
+    }
+  }
+
+  Future<Map<String, dynamic>?> getOrderById(String orderId) async {
+    try {
+      final targetId = orderId.trim().toLowerCase();
+      final response = await get('/orders/$orderId');
+      if (!response.status.hasError && response.body != null && response.body['success'] == true && response.body['data'] != null) {
+        return Map<String, dynamic>.from(response.body['data']);
+      }
+
+      // Fallback: cari dari seluruh daftar pesanan
+      final allResponse = await get('/orders');
+      if (!allResponse.status.hasError && allResponse.body != null && allResponse.body['data'] is List) {
+        final list = allResponse.body['data'] as List;
+        for (var item in list) {
+          if (item is Map) {
+            final id1 = (item['id'] ?? '').toString().trim().toLowerCase();
+            final id2 = (item['orderId'] ?? '').toString().trim().toLowerCase();
+            if (id1 == targetId || id2 == targetId) {
+              return Map<String, dynamic>.from(item);
+            }
+          }
+        }
+      }
+      return null;
+    } catch (e) {
+      debugPrint('Error getting order status API: $e');
+      return null;
     }
   }
 

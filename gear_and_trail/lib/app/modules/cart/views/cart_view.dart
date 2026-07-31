@@ -5,6 +5,7 @@ import '../../main/controllers/main_controller.dart';
 import '../../auth/controllers/auth_controller.dart';
 import '../../profile/controllers/profile_controller.dart';
 import '../../../data/providers/location_service.dart';
+import '../../../routes/app_routes.dart';
 
 class CartView extends StatefulWidget {
   const CartView({super.key});
@@ -608,7 +609,7 @@ class _CartViewState extends State<CartView> {
                               barrierDismissible: false,
                             );
 
-                            final success = await cartController.checkout(
+                            final orderResult = await cartController.checkout(
                               name: _nameController.text,
                               phone: _phoneController.text,
                               address: _addressController.text,
@@ -616,45 +617,15 @@ class _CartViewState extends State<CartView> {
 
                             Get.back(); // Tutup loading dialog
 
-                            if (success) {
-                              Get.dialog(
-                                AlertDialog(
-                                  shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(16),
-                                  ),
-                                  title: const Text(
-                                    'Pesanan Diterima!',
-                                    style: TextStyle(
-                                      fontWeight: FontWeight.w900,
-                                      color: Color(0xFF1E3A2F),
-                                    ),
-                                  ),
-                                  content: const Text(
-                                    'Terima kasih! Pesanan Anda telah tersimpan di server dan sedang diproses admin.',
-                                  ),
-                                  actions: [
-                                    TextButton(
-                                      onPressed: () {
-                                        Get.back();
-                                        mainController.changePage(0);
-                                      },
-                                      child: const Text(
-                                        'OK',
-                                        style: TextStyle(
-                                          color: Color(0xFFB71C1C),
-                                          fontWeight: FontWeight.bold,
-                                        ),
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              );
+                            if (orderResult != null) {
+                              // Langsung arahkan ke Layar Lacak Status Pesanan (OrderTrackingView)
+                              Get.toNamed(Routes.orderTracking, arguments: orderResult);
                             } else {
                               Get.snackbar(
                                 'Gagal',
-                                'Gagal membisa membuat pesanan. Pastikan server laliomah_server berjalan.',
+                                'Gagal membuat pesanan. Pastikan server backend berjalan.',
                                 snackPosition: SnackPosition.BOTTOM,
-                                backgroundColor: Colors.red[700],
+                                backgroundColor: const Color(0xFFDC2626),
                                 colorText: Colors.white,
                               );
                             }
