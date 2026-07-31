@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:google_fonts/google_fonts.dart';
 import '../controllers/auth_controller.dart';
 import '../../../routes/app_routes.dart';
 
@@ -62,13 +63,13 @@ class _LoginViewState extends State<LoginView> {
                 },
               ),
               const SizedBox(height: 12),
-              const Text(
+              Text(
                 'Gear & Trail',
-                style: TextStyle(
-                  fontSize: 34,
-                  fontWeight: FontWeight.bold,
-                  color: Color(0xFF1E3A2F),
-                  letterSpacing: -0.5,
+                style: GoogleFonts.orbitron(
+                  fontSize: 30,
+                  fontWeight: FontWeight.w900,
+                  color: const Color(0xFF1E3A2F),
+                  letterSpacing: 0.5,
                 ),
               ),
               const SizedBox(height: 8),

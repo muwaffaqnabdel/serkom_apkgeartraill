@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:google_fonts/google_fonts.dart';
 import '../controllers/home_controller.dart';
 import '../../main/controllers/main_controller.dart';
 import '../../cart/controllers/cart_controller.dart';
@@ -47,7 +48,7 @@ class HomeView extends GetView<HomeController> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Hero Banner Card
+            // Hero Banner Card (Auto-Sliding Carousel)
             Container(
               margin: const EdgeInsets.all(16.0),
               height: 480,
@@ -61,71 +62,118 @@ class HomeView extends GetView<HomeController> {
                     offset: const Offset(0, 8),
                   )
                 ],
-                image: const DecorationImage(
-                  image: NetworkImage(
-                    'https://images.unsplash.com/photo-1485965120184-e220f721d03e?w=1000&auto=format&fit=crop&q=80',
-                  ),
-                  fit: BoxFit.cover,
-                ),
               ),
-              child: Container(
-                decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(24),
-                  gradient: LinearGradient(
-                    begin: Alignment.topCenter,
-                    end: Alignment.bottomCenter,
-                    colors: [
-                      Colors.black.withValues(alpha: 0.1),
-                      Colors.black.withValues(alpha: 0.7),
-                    ],
-                  ),
-                ),
-                padding: const EdgeInsets.all(24.0),
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.end,
-                  crossAxisAlignment: CrossAxisAlignment.start,
+              child: ClipRRect(
+                borderRadius: BorderRadius.circular(24),
+                child: Stack(
                   children: [
-                    const Text(
-                      'SEPEDA GUNUNG &\nPERALATAN OUTDOOR',
-                      style: TextStyle(
-                        fontSize: 32,
-                        fontWeight: FontWeight.w900,
-                        letterSpacing: 0.8,
-                        color: Colors.white,
-                        height: 1.2,
-                      ),
+                    PageView.builder(
+                      controller: controller.bannerPageController,
+                      onPageChanged: controller.onPageChanged,
+                      itemCount: controller.banners.length,
+                      itemBuilder: (context, index) {
+                        final banner = controller.banners[index];
+                        return Stack(
+                          fit: StackFit.expand,
+                          children: [
+                            Image.network(
+                              banner.image,
+                              fit: BoxFit.cover,
+                              errorBuilder: (context, error, stackTrace) => Container(
+                                color: const Color(0xFF1E3A2F),
+                                child: const Icon(Icons.directions_bike, size: 80, color: Colors.white24),
+                              ),
+                            ),
+                            Container(
+                              decoration: BoxDecoration(
+                                gradient: LinearGradient(
+                                  begin: Alignment.topCenter,
+                                  end: Alignment.bottomCenter,
+                                  colors: [
+                                    Colors.black.withValues(alpha: 0.15),
+                                    Colors.black.withValues(alpha: 0.75),
+                                  ],
+                                ),
+                              ),
+                              padding: const EdgeInsets.all(24.0),
+                              child: Column(
+                                mainAxisAlignment: MainAxisAlignment.end,
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    banner.title,
+                                    style: GoogleFonts.orbitron(
+                                      fontSize: 26,
+                                      fontWeight: FontWeight.w900,
+                                      letterSpacing: 0.8,
+                                      color: Colors.white,
+                                      height: 1.2,
+                                    ),
+                                  ),
+                                  const SizedBox(height: 10),
+                                  Text(
+                                    banner.subtitle,
+                                    style: const TextStyle(
+                                      color: Colors.white70,
+                                      fontSize: 13.5,
+                                      height: 1.4,
+                                    ),
+                                  ),
+                                  const SizedBox(height: 20),
+                                  ElevatedButton(
+                                    onPressed: () => mainController.changePage(1),
+                                    style: ElevatedButton.styleFrom(
+                                      backgroundColor: const Color(0xFF1E3A2F),
+                                      foregroundColor: Colors.white,
+                                      padding: const EdgeInsets.symmetric(horizontal: 22, vertical: 13),
+                                      shape: RoundedRectangleBorder(
+                                        borderRadius: BorderRadius.circular(12),
+                                      ),
+                                      elevation: 0,
+                                    ),
+                                    child: const Row(
+                                      mainAxisSize: MainAxisSize.min,
+                                      children: [
+                                        Text(
+                                          'Lihat Katalog',
+                                          style: TextStyle(fontWeight: FontWeight.bold, fontSize: 15),
+                                        ),
+                                        SizedBox(width: 8),
+                                        Icon(Icons.arrow_forward, size: 18),
+                                      ],
+                                    ),
+                                  ),
+                                  const SizedBox(height: 16),
+                                ],
+                              ),
+                            ),
+                          ],
+                        );
+                      },
                     ),
-                    const SizedBox(height: 12),
-                    const Text(
-                      'Pilihan sepeda MTB trail, enduro, helm proteksi, serta aksesori gowes terbaik untuk petualanganmu.',
-                      style: TextStyle(
-                        color: Colors.white70,
-                        fontSize: 14,
-                        height: 1.4,
-                      ),
-                    ),
-                    const SizedBox(height: 24),
-                    ElevatedButton(
-                      onPressed: () => mainController.changePage(1),
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: const Color(0xFF1E3A2F),
-                        foregroundColor: Colors.white,
-                        padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 14),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                        elevation: 0,
-                      ),
-                      child: const Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Text(
-                            'Lihat Katalog',
-                            style: TextStyle(fontWeight: FontWeight.bold, fontSize: 15),
+                    // Carousel Page Indicators (Dots)
+                    Positioned(
+                      bottom: 20,
+                      right: 24,
+                      child: Obx(
+                        () => Row(
+                          children: List.generate(
+                            controller.banners.length,
+                            (index) {
+                              final isActive = controller.currentBannerIndex.value == index;
+                              return AnimatedContainer(
+                                duration: const Duration(milliseconds: 300),
+                                margin: const EdgeInsets.only(left: 6),
+                                height: 8,
+                                width: isActive ? 24 : 8,
+                                decoration: BoxDecoration(
+                                  color: isActive ? const Color(0xFFEA580C) : Colors.white.withValues(alpha: 0.4),
+                                  borderRadius: BorderRadius.circular(4),
+                                ),
+                              );
+                            },
                           ),
-                          SizedBox(width: 8),
-                          Icon(Icons.arrow_forward, size: 18),
-                        ],
+                        ),
                       ),
                     ),
                   ],
@@ -136,14 +184,14 @@ class HomeView extends GetView<HomeController> {
             const SizedBox(height: 8),
 
             // Section Header: Kategori Pilihan
-            const Padding(
-              padding: EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
               child: Text(
                 'Kategori Pilihan',
-                style: TextStyle(
-                  fontSize: 20,
+                style: GoogleFonts.orbitron(
+                  fontSize: 18,
                   fontWeight: FontWeight.bold,
-                  color: Color(0xFF1E3A2F),
+                  color: const Color(0xFF1E3A2F),
                 ),
               ),
             ),
@@ -245,12 +293,12 @@ class HomeView extends GetView<HomeController> {
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  const Text(
+                  Text(
                     'Rekomendasi Hari Ini',
-                    style: TextStyle(
-                      fontSize: 20,
+                    style: GoogleFonts.orbitron(
+                      fontSize: 18,
                       fontWeight: FontWeight.bold,
-                      color: Color(0xFF1E3A2F),
+                      color: const Color(0xFF1E3A2F),
                     ),
                   ),
                   TextButton(

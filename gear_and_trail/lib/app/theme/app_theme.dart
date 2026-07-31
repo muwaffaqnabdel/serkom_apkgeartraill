@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 
 class AppTheme {
   // Color Palette - Forest Trail & Amber Outdoor Theme (Dominan Tampilan Login)
@@ -25,17 +26,17 @@ class AppTheme {
       onSurface: textDark,
     ),
 
-    // AppBar Styling (Sharp, Bold, Athletic Extreme Sports Header)
-    appBarTheme: const AppBarTheme(
+    // AppBar Styling (Sharp, Bold, Athletic Orbitron Header)
+    appBarTheme: AppBarTheme(
       backgroundColor: Colors.white,
       foregroundColor: primaryForest,
       elevation: 0,
       centerTitle: true,
-      iconTheme: IconThemeData(color: primaryForest),
-      titleTextStyle: TextStyle(
+      iconTheme: const IconThemeData(color: primaryForest),
+      titleTextStyle: GoogleFonts.orbitron(
         fontSize: 22,
         fontWeight: FontWeight.w900,
-        letterSpacing: 0.5,
+        letterSpacing: 1.2,
         color: primaryForest,
       ),
     ),
@@ -60,9 +61,10 @@ class AppTheme {
           borderRadius: BorderRadius.circular(12),
         ),
         elevation: 0,
-        textStyle: const TextStyle(
-          fontSize: 16,
+        textStyle: GoogleFonts.orbitron(
+          fontSize: 15,
           fontWeight: FontWeight.bold,
+          letterSpacing: 0.5,
         ),
       ),
     ),
@@ -89,19 +91,19 @@ class AppTheme {
       ),
     ),
 
-    // Bold Athletic Text Theme for Extreme Sports
-    textTheme: const TextTheme(
-      displayLarge: TextStyle(fontWeight: FontWeight.w900, color: textDark, letterSpacing: -0.5),
-      displayMedium: TextStyle(fontWeight: FontWeight.w900, color: textDark, letterSpacing: -0.5),
-      displaySmall: TextStyle(fontWeight: FontWeight.w800, color: textDark),
-      headlineLarge: TextStyle(fontWeight: FontWeight.w900, color: textDark, letterSpacing: 0.2),
-      headlineMedium: TextStyle(fontWeight: FontWeight.w800, color: textDark),
-      headlineSmall: TextStyle(fontWeight: FontWeight.w800, color: textDark),
-      titleLarge: TextStyle(fontWeight: FontWeight.w800, color: textDark, letterSpacing: 0.2),
-      titleMedium: TextStyle(fontWeight: FontWeight.w700, color: textDark),
-      titleSmall: TextStyle(fontWeight: FontWeight.w700, color: textDark),
-      bodyLarge: TextStyle(fontWeight: FontWeight.w500, color: textDark),
-      bodyMedium: TextStyle(fontWeight: FontWeight.normal, color: textMuted),
+    // Bold Athletic Orbitron Text Theme for Extreme Sports Titles
+    textTheme: TextTheme(
+      displayLarge: GoogleFonts.orbitron(fontWeight: FontWeight.w900, color: textDark, letterSpacing: -0.5),
+      displayMedium: GoogleFonts.orbitron(fontWeight: FontWeight.w900, color: textDark, letterSpacing: -0.5),
+      displaySmall: GoogleFonts.orbitron(fontWeight: FontWeight.w800, color: textDark),
+      headlineLarge: GoogleFonts.orbitron(fontWeight: FontWeight.w900, color: textDark, letterSpacing: 0.2),
+      headlineMedium: GoogleFonts.orbitron(fontWeight: FontWeight.w800, color: textDark),
+      headlineSmall: GoogleFonts.orbitron(fontWeight: FontWeight.w800, color: textDark),
+      titleLarge: GoogleFonts.orbitron(fontWeight: FontWeight.w800, color: textDark, letterSpacing: 0.2),
+      titleMedium: GoogleFonts.orbitron(fontWeight: FontWeight.w700, color: textDark),
+      titleSmall: GoogleFonts.orbitron(fontWeight: FontWeight.w700, color: textDark),
+      bodyLarge: const TextStyle(fontWeight: FontWeight.w500, color: textDark),
+      bodyMedium: const TextStyle(fontWeight: FontWeight.normal, color: textMuted),
     ),
   );
 }
