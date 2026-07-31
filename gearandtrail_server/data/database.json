@@ -108,6 +108,103 @@
   ],
   "orders": [
     {
+      "id": "ORD-3877",
+      "customerName": "abdel  ganteng",
+      "customerPhone": "081234567890",
+      "shippingAddress": "Jl. Mawar No. 12, RT 03/RW 05, Kel. Sukamaju, Kec. Cilandak, Jakarta Selatan",
+      "latitude": -6.2,
+      "longitude": 106.816666,
+      "items": [
+        {
+          "productId": "p5",
+          "productName": "Kacamata Oakley Jawbreaker Prizm",
+          "price": 2850000,
+          "quantity": 1,
+          "totalPrice": 2850000
+        },
+        {
+          "productId": "p6",
+          "productName": "Pedal Flat Rockbros Sealed Bearing",
+          "price": 350000,
+          "quantity": 1,
+          "totalPrice": 350000
+        }
+      ],
+      "subtotal": 3200000,
+      "shippingFee": 10000,
+      "totalAmount": 3210000,
+      "status": "Sedang Dikirim",
+      "createdAt": "2026-07-31T07:28:23.876Z",
+      "updatedAt": "2026-07-31T07:28:41.004Z"
+    },
+    {
+      "id": "ORD-2789",
+      "customerName": "abdel muwaffaq nouri",
+      "customerPhone": "081234567890",
+      "shippingAddress": "Jl. Mawar No. 12, RT 03/RW 05, Kel. Sukamaju, Kec. Cilandak, Jakarta Selatan",
+      "latitude": -6.2,
+      "longitude": 106.816666,
+      "items": [
+        {
+          "productId": "p2",
+          "productName": "United Clovis 6.10 Hardtail",
+          "price": 9800000,
+          "quantity": 2,
+          "totalPrice": 19600000
+        },
+        {
+          "productId": "p1",
+          "productName": "Polygon Siskiu T8 MTB",
+          "price": 28500000,
+          "quantity": 2,
+          "totalPrice": 57000000
+        }
+      ],
+      "subtotal": 76600000,
+      "shippingFee": 10000,
+      "totalAmount": 76610000,
+      "status": "Sedang Dikirim",
+      "createdAt": "2026-07-31T07:14:48.377Z",
+      "updatedAt": "2026-07-31T07:15:06.773Z"
+    },
+    {
+      "id": "ORD-9206",
+      "customerName": "abdel muwaffaq nouri",
+      "customerPhone": "081234567890",
+      "shippingAddress": "Jl. Mawar No. 12, RT 03/RW 05, Kel. Sukamaju, Kec. Cilandak, Jakarta Selatan",
+      "latitude": -6.2,
+      "longitude": 106.816666,
+      "items": [
+        {
+          "productId": "p1",
+          "productName": "Polygon Siskiu T8 MTB",
+          "price": 28500000,
+          "quantity": 1,
+          "totalPrice": 28500000
+        },
+        {
+          "productId": "p2",
+          "productName": "United Clovis 6.10 Hardtail",
+          "price": 9800000,
+          "quantity": 1,
+          "totalPrice": 9800000
+        },
+        {
+          "productId": "p5",
+          "productName": "Kacamata Oakley Jawbreaker Prizm",
+          "price": 2850000,
+          "quantity": 1,
+          "totalPrice": 2850000
+        }
+      ],
+      "subtotal": 41150000,
+      "shippingFee": 10000,
+      "totalAmount": 41160000,
+      "status": "Sedang Dikirim",
+      "createdAt": "2026-07-31T07:00:00.626Z",
+      "updatedAt": "2026-07-31T07:00:53.151Z"
+    },
+    {
       "id": "ORD-6509",
       "customerName": "abdel muwaffaq",
       "customerPhone": "0987654367",

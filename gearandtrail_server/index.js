@@ -626,16 +626,35 @@ app.get('/api/orders', (req, res) => {
   });
 });
 
+app.get('/api/orders/:id', (req, res) => {
+  const db = readDb();
+  const targetId = (req.params.id || '').trim().toLowerCase();
+  const order = (db.orders || []).find(o => 
+    (o.id && o.id.toString().trim().toLowerCase() === targetId) ||
+    (o.orderId && o.orderId.toString().trim().toLowerCase() === targetId)
+  );
+  if (!order) {
+    return res.status(404).json({ success: false, message: 'Pesanan tidak ditemukan' });
+  }
+  res.json({
+    success: true,
+    data: order
+  });
+});
+
 app.post('/api/orders', (req, res) => {
   const db = readDb();
-  const { customerName, customerPhone, shippingAddress, items, subtotal, shippingFee, totalAmount, latitude, longitude } = req.body;
+  const { orderId, customerName, customerPhone, shippingAddress, items, subtotal, shippingFee, totalAmount, latitude, longitude } = req.body;
 
   if (!items || items.length === 0) {
     return res.status(400).json({ success: false, message: 'Item pesanan tidak boleh kosong' });
   }
 
+  const newOrderId = orderId || req.body.id || ('ORD-' + Math.floor(1000 + Math.random() * 9000));
+
   const newOrder = {
-    id: 'ORD-' + Math.floor(1000 + Math.random() * 9000),
+    id: newOrderId,
+    orderId: newOrderId,
     customerName: customerName || 'Pelanggan Gear & Trail',
     customerPhone: customerPhone || '081234567890',
     shippingAddress: shippingAddress || 'Alamat Utama Pelanggan',
@@ -662,7 +681,11 @@ app.post('/api/orders', (req, res) => {
 app.put('/api/orders/:id/status', (req, res) => {
   const db = readDb();
   const { status } = req.body;
-  const index = db.orders.findIndex(o => o.id === req.params.id);
+  const targetId = (req.params.id || '').trim().toLowerCase();
+  const index = (db.orders || []).findIndex(o => 
+    (o.id && o.id.toString().trim().toLowerCase() === targetId) ||
+    (o.orderId && o.orderId.toString().trim().toLowerCase() === targetId)
+  );
 
   if (index === -1) {
     return res.status(404).json({ success: false, message: 'Pesanan tidak ditemukan' });
