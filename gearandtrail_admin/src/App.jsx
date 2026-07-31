@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Sidebar from './components/Sidebar';
 import Header from './components/Header';
 import DashboardPage from './pages/DashboardPage';
@@ -6,9 +6,41 @@ import CategoriesPage from './pages/CategoriesPage';
 import ProductsPage from './pages/ProductsPage';
 import OrdersPage from './pages/OrdersPage';
 import UsersPage from './pages/UsersPage';
+import AdminLoginPage from './pages/AdminLoginPage';
 
 export default function App() {
   const [activeTab, setActiveTab] = useState('dashboard');
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [adminUser, setAdminUser] = useState(null);
+
+  useEffect(() => {
+    const savedLoggedIn = localStorage.getItem('isAdminLoggedIn');
+    const savedUser = localStorage.getItem('adminUser');
+    if (savedLoggedIn === 'true' && savedUser) {
+      try {
+        setIsLoggedIn(true);
+        setAdminUser(JSON.parse(savedUser));
+      } catch (e) {
+        setIsLoggedIn(false);
+      }
+    }
+  }, []);
+
+  const handleLoginSuccess = (userData) => {
+    setIsLoggedIn(true);
+    setAdminUser(userData);
+  };
+
+  const handleLogout = () => {
+    localStorage.removeItem('isAdminLoggedIn');
+    localStorage.removeItem('adminUser');
+    setIsLoggedIn(false);
+    setAdminUser(null);
+  };
+
+  if (!isLoggedIn) {
+    return <AdminLoginPage onLoginSuccess={handleLoginSuccess} />;
+  }
 
   const getPageDetails = () => {
     switch (activeTab) {
@@ -46,9 +78,9 @@ export default function App() {
 
   return (
     <div className="app-container">
-      <Sidebar activeTab={activeTab} setActiveTab={setActiveTab} />
+      <Sidebar activeTab={activeTab} setActiveTab={setActiveTab} onLogout={handleLogout} />
       <div className="main-content">
-        <Header title={title} subtitle={subtitle} />
+        <Header title={title} subtitle={subtitle} onLogout={handleLogout} adminUser={adminUser} />
         <main className="page-container">
           {activeTab === 'dashboard' && <DashboardPage setActiveTab={setActiveTab} />}
           {activeTab === 'categories' && <CategoriesPage />}

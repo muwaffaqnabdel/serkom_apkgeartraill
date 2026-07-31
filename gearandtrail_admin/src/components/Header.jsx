@@ -1,6 +1,9 @@
 import React from 'react';
 
-export default function Header({ title, subtitle }) {
+export default function Header({ title, subtitle, onLogout, adminUser }) {
+  const name = adminUser?.name || 'Administrator';
+  const email = adminUser?.email || 'admin@geartrail.com';
+
   return (
     <header style={{
       padding: '20px 32px',
@@ -57,7 +60,7 @@ export default function Header({ title, subtitle }) {
             width: '38px',
             height: '38px',
             borderRadius: '50%',
-            backgroundColor: '#4A2C2A',
+            backgroundColor: '#1E3A2F',
             color: '#FFFFFF',
             fontWeight: 700,
             display: 'flex',
@@ -65,16 +68,35 @@ export default function Header({ title, subtitle }) {
             justifyContent: 'center',
             fontSize: '1rem'
           }}>
-            A
+            {name.charAt(0).toUpperCase()}
           </div>
           <div>
             <div style={{ fontSize: '0.9rem', fontWeight: 700, color: '#2C1810' }}>
-              Administrator
+              {name}
             </div>
             <div style={{ fontSize: '0.75rem', color: '#7A6B63' }}>
-              admin@geartrail.com
+              {email}
             </div>
           </div>
+          {onLogout && (
+            <button
+              onClick={onLogout}
+              title="Keluar Admin"
+              style={{
+                marginLeft: '8px',
+                padding: '6px 10px',
+                backgroundColor: '#FEF2F2',
+                border: '1px solid #FCA5A5',
+                borderRadius: '8px',
+                color: '#DC2626',
+                cursor: 'pointer',
+                fontSize: '0.8rem',
+                fontWeight: 600
+              }}
+            >
+              Logout
+            </button>
+          )}
         </div>
       </div>
     </header>
